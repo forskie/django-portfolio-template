@@ -1,10 +1,10 @@
 from django.shortcuts import render
-from .models import Skill, Project, Experience, Profile, ContactLink
+from .models import Skill, Project, Experience, Profile, ContactLink, Highlight, SiteSettings
 
 
 def home(request):
-    # Группируем навыки по категориям в порядке, заданном в CATEGORY_CHOICES.
-    # Группа не выводится, если в ней ещё нет ни одной записи в БД.
+    # Group skills by category, in the order defined by CATEGORY_CHOICES.
+    # A group is only included once it has at least one row in the database.
     skill_groups = []
     for code, label in Skill.CATEGORY_CHOICES:
         skills = Skill.objects.filter(category=code)
@@ -13,10 +13,11 @@ def home(request):
 
     context = {
         "profile": Profile.load(),
+        "site_settings": SiteSettings.load(),
         "contact_links": ContactLink.objects.all(),
         "skill_groups": skill_groups,
         "projects": Project.objects.all(),
         "experiences": Experience.objects.all(),
+        "highlights": Highlight.objects.all(),
     }
     return render(request, "main/home.html", context)
-
