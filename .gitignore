@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Media uploads
+media/
+
+# Static collected files
+staticfiles/
+static/
+
+# Django cache
+.cache/
+*.pot
+*.mo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Docker
+docker-compose.override.yml
+
+# Node (если есть frontend)
+node_modules/
+npm-debug.log
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Backup
+*.bak
+*.tmp
+*.sqlite3

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bilal — Backend Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #10151C;
+    --surface: #161D27;
+    --surface-2: #1C2530;
+    --chalk: #EDEFF2;
+    --slate: #8C97A6;
+    --slate-dim: #5B6472;
+    --signal: #E4A94E;
+    --signal-dim: #8A6A34;
+    --line: #2A3441;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--ink);
+    color: var(--chalk);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* ---------- HERO ---------- */
+
+  .hero {
+    padding: 96px 0 72px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--signal);
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .eyebrow::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--signal);
+    box-shadow: 0 0 0 3px rgba(228,169,78,0.15);
+  }
+
+  h1 {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: clamp(38px, 6vw, 58px);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: var(--chalk);
+  }
+
+  h1 span {
+    color: var(--slate-dim);
+  }
+
+  .thesis {
+    margin-top: 22px;
+    max-width: 52ch;
+    font-size: 18px;
+    color: var(--slate);
+    font-weight: 400;
+  }
+
+  .thesis strong {
+    color: var(--chalk);
+    font-weight: 600;
+  }
+
+  .contact-row {
+    margin-top: 36px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .contact-row a {
+    font-family: var(--mono);
+    font-size: 13px;
+    text-decoration: none;
+    color: var(--chalk);
+    border: 1px solid var(--line);
+    padding: 9px 14px;
+    border-radius: 3px;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .contact-row a:hover {
+    border-color: var(--signal);
+    color: var(--signal);
+  }
+
+  /* ---------- SECTION SYSTEM ---------- */
+
+  section {
+    padding: 56px 0;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
+
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+
+  .sec-num {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--signal-dim);
+    letter-spacing: 0.05em;
+  }
+
+  .sec-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--slate);
+  }
+
+  .sec-title::after {
+    content: "";
+    display: inline-block;
+    width: 100%;
+  }
+
+  /* ---------- STACK ---------- */
+
+  .stack-group {
+    margin-bottom: 22px;
+  }
+
+  .stack-group:last-child { margin-bottom: 0; }
+
+  .stack-label {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--slate-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .chip {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--chalk);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 6px 11px;
+    border-radius: 3px;
+  }
+
+  /* ---------- EXPERIENCE ---------- */
+
+  .entry {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 20px;
+    padding: 20px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .entry:first-of-type { border-top: none; padding-top: 0; }
+
+  .entry-date {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--slate-dim);
+    padding-top: 3px;
+  }
+
+  .entry-role {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--chalk);
+  }
+
+  .entry-org {
+    color: var(--signal);
+    font-weight: 500;
+  }
+
+  .entry-desc {
+    margin-top: 8px;
+    color: var(--slate);
+    font-size: 14.5px;
+    max-width: 56ch;
+  }
+
+  /* ---------- PROJECTS ---------- */
+
+  .proj-card {
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+    background: var(--surface);
+  }
+
+  .proj-card:last-child { margin-bottom: 0; }
+
+  .proj-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .proj-name {
+    font-weight: 600;
+    font-size: 17px;
+  }
+
+  .proj-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--signal);
+    border: 1px solid var(--signal-dim);
+    padding: 3px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .proj-desc {
+    color: var(--slate);
+    font-size: 14.5px;
+    margin-bottom: 14px;
+  }
+
+  .proj-meta {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--slate-dim);
+    border-top: 1px dashed var(--line);
+    padding-top: 12px;
+  }
+
+  .proj-links {
+    margin-top: 14px;
+    display: flex;
+    gap: 14px;
+  }
+
+  .proj-links a {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--chalk);
+    text-decoration: none;
+    border-bottom: 1px solid var(--slate-dim);
+    padding-bottom: 1px;
+  }
+
+  .proj-links a:hover { border-color: var(--signal); color: var(--signal); }
+
+  /* ---------- NOW ---------- */
+
+  .now-text {
+    color: var(--slate);
+    font-size: 15px;
+    max-width: 58ch;
+  }
+
+  .now-text strong { color: var(--chalk); }
+
+  /* ---------- DEPLOY STATUS FOOTER ---------- */
+
+  footer {
+    padding: 40px 0 80px;
+  }
+
+  .status-panel {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 18px 20px;
+  }
+
+  .status-title {
+    color: var(--slate-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 10.5px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .status-title::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4ADE80;
+    box-shadow: 0 0 0 3px rgba(74,222,128,0.15);
+  }
+
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px 20px;
+    color: var(--slate);
+  }
+
+  .status-grid div span {
+    color: var(--chalk);
+  }
+
+  .foot-note {
+    margin-top: 18px;
+    color: var(--slate-dim);
+    font-size: 12px;
+  }
+
+  /* ---------- EMPTY STATE ---------- */
+
+  .empty-hint {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--slate-dim);
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+    padding: 14px 16px;
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+
+  @media (max-width: 560px) {
+    .hero { padding: 64px 0 48px; }
+    .entry { grid-template-columns: 1fr; gap: 6px; }
+    .wrap { padding: 0 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="wrap">
+
+    <!-- HERO (из Profile + ContactLink) -->
+    <div class="hero">
+      <div class="eyebrow">
+        {{ profile.role_title }}{% if profile.location %} · {{ profile.location }}{% endif %}{% if profile.availability %} · {{ profile.availability }}{% endif %}
+      </div>
+      <h1>{{ profile.full_name }}<span>.</span></h1>
+      {% if profile.thesis %}
+      <p class="thesis">{{ profile.thesis|safe }}</p>
+      {% endif %}
+      <div class="contact-row">
+        {% for link in contact_links %}
+        <a href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }}</a>
+        {% endfor %}
+        {% if profile.resume %}
+        <a href="{{ profile.resume.url }}" target="_blank" rel="noopener">resume.pdf</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- STACK (из Skill, сгруппировано по category) -->
+    <section id="stack">
+      <div class="sec-head">
+        <span class="sec-num">§01</span>
+        <span class="sec-title">Stack</span>
+      </div>
+
+      {% for group in skill_groups %}
+      <div class="stack-group">
+        <div class="stack-label">{{ group.label }}</div>
+        <div class="chips">
+          {% for skill in group.skills %}
+          <span class="chip">{{ skill.name }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% empty %}
+      <p class="empty-hint">Навыки ещё не добавлены — зайди в /admin/ и добавь Skill.</p>
+      {% endfor %}
+    </section>
+
+    <!-- EXPERIENCE (из Experience) -->
+    <section id="experience">
+      <div class="sec-head">
+        <span class="sec-num">§02</span>
+        <span class="sec-title">Experience</span>
+      </div>
+
+      {% for exp in experiences %}
+      <div class="entry">
+        <div class="entry-date">
+          {{ exp.date_start|date:"Y" }} — {% if exp.date_end %}{{ exp.date_end|date:"Y" }}{% else %}Now{% endif %}
+        </div>
+        <div>
+          <div class="entry-role">{{ exp.role }} <span class="entry-org">· {{ exp.place }}</span></div>
+          <p class="entry-desc">{{ exp.description }}</p>
+        </div>
+      </div>
+      {% empty %}
+      <p class="empty-hint">Опыт ещё не добавлен — зайди в /admin/ и добавь Experience.</p>
+      {% endfor %}
+    </section>
+
+    <!-- PROJECTS (из Project) -->
+    <section id="projects">
+      <div class="sec-head">
+        <span class="sec-num">§03</span>
+        <span class="sec-title">Projects</span>
+      </div>
+
+      {% for project in projects %}
+      <div class="proj-card">
+        <div class="proj-top">
+          <span class="proj-name">{{ project.title }}</span>
+          <span class="proj-tag">{{ project.get_status_display }}</span>
+        </div>
+        <p class="proj-desc">{{ project.description }}</p>
+        <div class="proj-meta">{{ project.tech_stack }}</div>
+        {% if project.github_url or project.demo_url %}
+        <div class="proj-links">
+          {% if project.github_url %}<a href="{{ project.github_url }}" target="_blank" rel="noopener">Source →</a>{% endif %}
+          {% if project.demo_url %}<a href="{{ project.demo_url }}" target="_blank" rel="noopener">Live demo →</a>{% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% empty %}
+      <p class="empty-hint">Проекты ещё не добавлены — зайди в /admin/ и добавь Project.</p>
+      {% endfor %}
+    </section>
+
+    <!-- NOW -->
+    <section id="now">
+      <div class="sec-head">
+        <span class="sec-num">§04</span>
+        <span class="sec-title">Currently</span>
+      </div>
+      <p class="now-text">{{ profile.currently_text|safe }}</p>
+    </section>
+
+    <!-- DEPLOY STATUS -->
+    <footer>
+      <div class="status-panel">
+        <div class="status-title">Deployment status</div>
+        <div class="status-grid">
+          <div>Host <br><span>forskie.top</span></div>
+          <div>Server <br><span>AWS EC2</span></div>
+          <div>Runtime <br><span>Django + Gunicorn</span></div>
+          <div>Database <br><span>PostgreSQL</span></div>
+          <div>Proxy <br><span>Nginx</span></div>
+          <div>Shipped via <br><span>Docker Compose</span></div>
+        </div>
+      </div>
+      <p class="foot-note">© 2026 Bilal — built from scratch, deployed by hand.</p>
+    </footer>
+
+  </div>
+
+</body>
+</html>
