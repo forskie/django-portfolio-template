@@ -1,504 +1,1105 @@
-<!DOCTYPE html>
-<html lang="ru">
+{% load static portfolio_extras %}<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bilal — Backend Engineer</title>
+<meta name="theme-color" content="#0A0D12">
+
+<title>{{ profile.full_name }} — {{ profile.role_title }}</title>
+<meta name="description" content="{% if site_settings.meta_description %}{{ site_settings.meta_description }}{% else %}{{ profile.thesis|striptags }}{% endif %}">
+{% if site_settings.meta_keywords %}<meta name="keywords" content="{{ site_settings.meta_keywords }}">{% endif %}
+<link rel="canonical" href="{% if site_settings.canonical_url %}{{ site_settings.canonical_url }}{% else %}{{ request.build_absolute_uri }}{% endif %}">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ profile.full_name }} — {{ profile.role_title }}">
+<meta property="og:description" content="{% if site_settings.meta_description %}{{ site_settings.meta_description }}{% else %}{{ profile.thesis|striptags }}{% endif %}">
+<meta property="og:url" content="{% if site_settings.canonical_url %}{{ site_settings.canonical_url }}{% else %}{{ request.build_absolute_uri }}{% endif %}">
+{% if site_settings.og_image %}<meta property="og:image" content="{{ site_settings.og_image.url }}">{% elif profile.photo %}<meta property="og:image" content="{{ profile.photo.url }}">{% endif %}
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+{% if site_settings.twitter_handle %}<meta name="twitter:site" content="@{{ site_settings.twitter_handle }}">{% endif %}
+<meta name="twitter:title" content="{{ profile.full_name }} — {{ profile.role_title }}">
+<meta name="twitter:description" content="{% if site_settings.meta_description %}{{ site_settings.meta_description }}{% else %}{{ profile.thesis|striptags }}{% endif %}">
+{% if site_settings.og_image %}<meta name="twitter:image" content="{{ site_settings.og_image.url }}">{% elif profile.photo %}<meta name="twitter:image" content="{{ profile.photo.url }}">{% endif %}
+
+{% if site_settings.favicon %}<link rel="icon" href="{{ site_settings.favicon.url }}">{% endif %}
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --ink: #10151C;
-    --surface: #161D27;
-    --surface-2: #1C2530;
-    --chalk: #EDEFF2;
-    --slate: #8C97A6;
-    --slate-dim: #5B6472;
-    --signal: #E4A94E;
-    --signal-dim: #8A6A34;
-    --line: #2A3441;
-    --mono: 'JetBrains Mono', ui-monospace, monospace;
-    --sans: 'Inter', system-ui, sans-serif;
+/* =====================================================================
+   DESIGN TOKENS
+   ===================================================================== */
+:root {
+  /* Surfaces */
+  --bg: #0A0D12;
+  --surface: #12161D;
+  --surface-2: #171C25;
+  --surface-hover: #1C222D;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+
+  /* Text */
+  --text-hi: #F2F4F7;
+  --text-mid: #98A1AF;
+  --text-dim: #5B6472;
+
+  /* Accent (warm amber — keeps the terminal / backend-engineer register) */
+  --accent: #E8A23D;
+  --accent-hi: #F5C177;
+  --accent-dim: #8A6530;
+  --accent-wash: rgba(232, 162, 61, 0.1);
+
+  --success: #4ADE80;
+
+  /* Type */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+  /* 8px grid spacing scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+  --sp-9: 96px;
+  --sp-10: 128px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 0.15s;
+  --dur-med: 0.4s;
+  --dur-slow: 0.7s;
+
+  --max-w: 760px;
+}
+
+/* =====================================================================
+   RESET & BASE
+   ===================================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 88px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-hi);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img { max-width: 100%; display: block; }
+
+a { color: inherit; text-decoration: none; }
+
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+
+ul { list-style: none; }
+
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  top: -48px;
+  left: var(--sp-4);
+  z-index: 200;
+  background: var(--accent);
+  color: var(--bg);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 13px;
+  transition: top var(--dur-fast) var(--ease);
+}
+.skip-link:focus { top: var(--sp-4); }
+
+.wrap {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+/* =====================================================================
+   MOTION — fade-up / reveal utilities, respecting reduced motion
+   ===================================================================== */
+.fade-up {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: fadeUp var(--dur-slow) var(--ease) forwards;
+}
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .fade-up, .reveal {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* =====================================================================
+   NAVIGATION
+   ===================================================================== */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(10, 13, 18, 0.72);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid var(--border);
+}
 
-  html { scroll-behavior: smooth; }
+.nav-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 28px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-  body {
-    background: var(--ink);
-    color: var(--chalk);
-    font-family: var(--sans);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-  }
+.nav-brand {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-hi);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
 
-  a { color: inherit; }
-  a:focus-visible, button:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+.nav-brand .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15);
+  flex-shrink: 0;
+}
 
-  .wrap {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 0 28px;
-  }
+.nav-links {
+  display: flex;
+  gap: var(--sp-6);
+}
 
-  /* ---------- HERO ---------- */
+.nav-links a {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.03em;
+  color: var(--text-mid);
+  position: relative;
+  padding: 4px 0;
+  transition: color var(--dur-fast) ease;
+}
 
-  .hero {
-    padding: 96px 0 72px;
-    border-bottom: 1px solid var(--line);
-  }
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: -3px;
+  width: 100%;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-fast) var(--ease);
+}
 
-  .eyebrow {
-    font-family: var(--mono);
-    font-size: 12.5px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--signal);
-    margin-bottom: 22px;
+.nav-links a:hover { color: var(--text-hi); }
+
+.nav-links a.active {
+  color: var(--accent);
+}
+.nav-links a.active::after { transform: scaleX(1); }
+
+.nav-toggle {
+  display: none;
+  width: 32px; height: 32px;
+  align-items: center;
+  justify-content: center;
+}
+.nav-toggle svg { width: 20px; height: 20px; }
+
+/* =====================================================================
+   HERO
+   ===================================================================== */
+.hero {
+  padding: 168px 0 var(--sp-9);
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  margin-bottom: var(--sp-6);
+}
+
+.hero-photo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border-strong);
+  flex-shrink: 0;
+}
+
+.hero-avatar-fallback {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.eyebrow .sep { color: var(--text-dim); }
+
+.eyebrow::before {
+  content: "";
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15);
+  flex-shrink: 0;
+}
+
+h1.name {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(38px, 6vw, 58px);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--text-hi);
+  position: relative;
+  display: inline-block;
+}
+
+h1.name .cursor {
+  display: inline-block;
+  color: var(--accent);
+  animation: blink 1.1s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+h1.name::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  bottom: -10px;
+  height: 3px;
+  width: 64px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-hi));
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: growLine var(--dur-slow) var(--ease) 0.4s forwards;
+}
+@keyframes growLine { to { transform: scaleX(1); } }
+
+.thesis {
+  margin-top: var(--sp-6);
+  max-width: 54ch;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--text-mid);
+  font-weight: 400;
+}
+.thesis strong { color: var(--text-hi); font-weight: 600; }
+
+/* Buttons */
+.btn-row {
+  margin-top: var(--sp-6);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  color: var(--text-hi);
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease,
+              background var(--dur-fast) ease, transform var(--dur-fast) ease;
+}
+
+.btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+}
+.btn-primary:hover {
+  background: var(--accent-hi);
+  border-color: var(--accent-hi);
+  color: var(--bg);
+}
+
+/* =====================================================================
+   SECTION SYSTEM
+   ===================================================================== */
+section {
+  padding: var(--sp-9) 0;
+  border-bottom: 1px solid var(--border);
+  scroll-margin-top: 80px;
+}
+
+.sec-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-7);
+}
+
+.sec-num {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--accent-dim);
+  letter-spacing: 0.05em;
+}
+
+.sec-title {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+}
+
+/* =====================================================================
+   STACK / SKILLS
+   ===================================================================== */
+.stack-group { margin-bottom: var(--sp-6); }
+.stack-group:last-child { margin-bottom: 0; }
+
+.stack-label {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--sp-3);
+}
+
+.skill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--sp-3);
+}
+
+.skill-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-3) var(--sp-4);
+  transition: border-color var(--dur-fast) ease, transform var(--dur-fast) ease,
+              background var(--dur-fast) ease;
+}
+
+.skill-card:hover {
+  border-color: var(--accent-dim);
+  background: var(--surface-hover);
+  transform: translateY(-2px);
+}
+
+.skill-name {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-hi);
+}
+
+.skill-level {
+  display: flex;
+  gap: 4px;
+  margin-top: var(--sp-2);
+}
+.skill-level i {
+  width: 12px; height: 3px;
+  border-radius: 2px;
+  background: var(--border-strong);
+}
+.skill-level i.filled { background: var(--accent); }
+
+/* =====================================================================
+   EXPERIENCE — vertical timeline
+   ===================================================================== */
+.timeline { position: relative; padding-left: var(--sp-6); }
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 3px; top: 6px; bottom: 6px;
+  width: 1px;
+  background: linear-gradient(180deg, var(--accent-dim), var(--border) 90%);
+}
+
+.entry { position: relative; padding-bottom: var(--sp-7); }
+.entry:last-child { padding-bottom: 0; }
+
+.entry::before {
+  content: "";
+  position: absolute;
+  left: calc(-1 * var(--sp-6) + -2px);
+  top: 6px;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--accent);
+}
+
+.entry-date {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: var(--sp-2);
+}
+
+.entry-role { font-weight: 600; font-size: 16px; color: var(--text-hi); }
+.entry-org { color: var(--accent); font-weight: 500; }
+
+.entry-desc {
+  margin-top: var(--sp-2);
+  color: var(--text-mid);
+  font-size: 14.5px;
+  max-width: 56ch;
+}
+
+/* =====================================================================
+   PROJECTS
+   ===================================================================== */
+.project-grid {
+  display: grid;
+  gap: var(--sp-5);
+}
+
+.proj-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  overflow: hidden;
+  transition: transform var(--dur-med) var(--ease), border-color var(--dur-med) ease,
+              box-shadow var(--dur-med) ease;
+}
+
+.proj-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-dim);
+  box-shadow: 0 16px 40px -20px rgba(232, 162, 61, 0.35), 0 0 0 1px var(--accent-wash);
+}
+
+.proj-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.proj-body { padding: var(--sp-5); }
+
+.proj-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+
+.proj-heading { display: flex; align-items: center; gap: var(--sp-3); }
+
+.proj-logo {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+.proj-name { font-weight: 600; font-size: 17px; }
+
+.proj-badge {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+  border: 1px solid;
+}
+.proj-badge.flagship { color: var(--accent); border-color: var(--accent-dim); background: var(--accent-wash); }
+.proj-badge.in_progress { color: #8AB4F8; border-color: rgba(138,180,248,0.35); background: rgba(138,180,248,0.08); }
+.proj-badge.side { color: var(--text-mid); border-color: var(--border-strong); background: var(--surface-2); }
+.proj-badge.archived { color: var(--text-dim); border-color: var(--border); background: transparent; }
+
+.proj-desc {
+  color: var(--text-mid);
+  font-size: 14.5px;
+  margin-bottom: var(--sp-4);
+}
+
+.proj-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+
+.tech-chip {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-mid);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.proj-links {
+  display: flex;
+  gap: var(--sp-5);
+  padding-top: var(--sp-4);
+  border-top: 1px dashed var(--border);
+}
+
+.proj-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-hi);
+  transition: color var(--dur-fast) ease;
+}
+.proj-links a svg { width: 14px; height: 14px; }
+.proj-links a:hover { color: var(--accent); }
+
+/* =====================================================================
+   HIGHLIGHTS (education / certifications / achievements)
+   ===================================================================== */
+.highlight-grid {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.highlight-card {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: var(--sp-5);
+  padding: var(--sp-4) 0;
+  border-top: 1px solid var(--border);
+}
+.highlight-card:first-child { border-top: none; padding-top: 0; }
+
+.highlight-date {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  padding-top: 3px;
+}
+
+.highlight-type {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin-bottom: var(--sp-1);
+}
+
+.highlight-title { font-weight: 600; font-size: 15.5px; color: var(--text-hi); }
+.highlight-subtitle { color: var(--text-mid); font-size: 14px; margin-top: 2px; }
+.highlight-desc { color: var(--text-mid); font-size: 14px; margin-top: var(--sp-2); max-width: 56ch; }
+
+.highlight-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-hi);
+  border-bottom: 1px solid var(--text-dim);
+}
+.highlight-link:hover { color: var(--accent); border-color: var(--accent); }
+
+/* =====================================================================
+   NOW
+   ===================================================================== */
+.now-text { color: var(--text-mid); font-size: 15px; max-width: 58ch; }
+.now-text strong { color: var(--text-hi); }
+
+/* =====================================================================
+   CONTACT
+   ===================================================================== */
+.contact-section { text-align: left; }
+.contact-lead {
+  color: var(--text-mid);
+  font-size: 16px;
+  max-width: 50ch;
+  margin-bottom: var(--sp-6);
+}
+
+/* =====================================================================
+   FOOTER
+   ===================================================================== */
+footer { padding: var(--sp-7) 0 var(--sp-9); }
+
+.status-panel {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-5);
+  margin-bottom: var(--sp-6);
+}
+
+.status-title {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 10.5px;
+  margin-bottom: var(--sp-4);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.status-title::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15);
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--sp-3) var(--sp-5);
+  color: var(--text-mid);
+}
+.status-grid div span { color: var(--text-hi); display: block; margin-top: 2px; }
+
+.foot-note {
+  color: var(--text-dim);
+  font-size: 12.5px;
+  font-family: var(--font-mono);
+}
+
+/* =====================================================================
+   EMPTY STATES
+   ===================================================================== */
+.empty-hint {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-dim);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4) var(--sp-5);
+}
+
+/* =====================================================================
+   RESPONSIVE
+   ===================================================================== */
+@media (min-width: 640px) {
+  .project-grid { grid-template-columns: repeat(2, 1fr); }
+  .status-panel { padding: var(--sp-6); }
+}
+
+@media (max-width: 640px) {
+  .nav-links { display: none; }
+  .nav-toggle { display: flex; }
+  .nav-links.open {
     display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .eyebrow::before {
-    content: "";
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--signal);
-    box-shadow: 0 0 0 3px rgba(228,169,78,0.15);
-  }
-
-  h1 {
-    font-family: var(--mono);
-    font-weight: 700;
-    font-size: clamp(38px, 6vw, 58px);
-    line-height: 1.05;
-    letter-spacing: -0.01em;
-    color: var(--chalk);
-  }
-
-  h1 span {
-    color: var(--slate-dim);
-  }
-
-  .thesis {
-    margin-top: 22px;
-    max-width: 52ch;
-    font-size: 18px;
-    color: var(--slate);
-    font-weight: 400;
-  }
-
-  .thesis strong {
-    color: var(--chalk);
-    font-weight: 600;
-  }
-
-  .contact-row {
-    margin-top: 36px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .contact-row a {
-    font-family: var(--mono);
-    font-size: 13px;
-    text-decoration: none;
-    color: var(--chalk);
-    border: 1px solid var(--line);
-    padding: 9px 14px;
-    border-radius: 3px;
-    transition: border-color 0.15s ease, color 0.15s ease;
-  }
-
-  .contact-row a:hover {
-    border-color: var(--signal);
-    color: var(--signal);
-  }
-
-  /* ---------- SECTION SYSTEM ---------- */
-
-  section {
-    padding: 56px 0;
-    border-bottom: 1px solid var(--line);
-    position: relative;
-  }
-
-  .sec-head {
-    display: flex;
-    align-items: baseline;
-    gap: 14px;
-    margin-bottom: 32px;
-  }
-
-  .sec-num {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--signal-dim);
-    letter-spacing: 0.05em;
-  }
-
-  .sec-title {
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--slate);
-  }
-
-  .sec-title::after {
-    content: "";
-    display: inline-block;
-    width: 100%;
-  }
-
-  /* ---------- STACK ---------- */
-
-  .stack-group {
-    margin-bottom: 22px;
-  }
-
-  .stack-group:last-child { margin-bottom: 0; }
-
-  .stack-label {
-    font-family: var(--mono);
-    font-size: 11.5px;
-    color: var(--slate-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 10px;
-  }
-
-  .chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .chip {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--chalk);
+    position: absolute;
+    top: 64px; left: 0; right: 0;
+    flex-direction: column;
+    gap: 0;
     background: var(--surface);
-    border: 1px solid var(--line);
-    padding: 6px 11px;
-    border-radius: 3px;
+    border-bottom: 1px solid var(--border);
+    padding: var(--sp-2) 28px var(--sp-4);
   }
+  .nav-links.open a { padding: var(--sp-3) 0; }
 
-  /* ---------- EXPERIENCE ---------- */
-
-  .entry {
-    display: grid;
-    grid-template-columns: 130px 1fr;
-    gap: 20px;
-    padding: 20px 0;
-    border-top: 1px solid var(--line);
-  }
-
-  .entry:first-of-type { border-top: none; padding-top: 0; }
-
-  .entry-date {
-    font-family: var(--mono);
-    font-size: 12.5px;
-    color: var(--slate-dim);
-    padding-top: 3px;
-  }
-
-  .entry-role {
-    font-weight: 600;
-    font-size: 16px;
-    color: var(--chalk);
-  }
-
-  .entry-org {
-    color: var(--signal);
-    font-weight: 500;
-  }
-
-  .entry-desc {
-    margin-top: 8px;
-    color: var(--slate);
-    font-size: 14.5px;
-    max-width: 56ch;
-  }
-
-  /* ---------- PROJECTS ---------- */
-
-  .proj-card {
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    padding: 22px 24px;
-    margin-bottom: 16px;
-    background: var(--surface);
-  }
-
-  .proj-card:last-child { margin-bottom: 0; }
-
-  .proj-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-
-  .proj-name {
-    font-weight: 600;
-    font-size: 17px;
-  }
-
-  .proj-tag {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--signal);
-    border: 1px solid var(--signal-dim);
-    padding: 3px 8px;
-    border-radius: 3px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-
-  .proj-desc {
-    color: var(--slate);
-    font-size: 14.5px;
-    margin-bottom: 14px;
-  }
-
-  .proj-meta {
-    font-family: var(--mono);
-    font-size: 12.5px;
-    color: var(--slate-dim);
-    border-top: 1px dashed var(--line);
-    padding-top: 12px;
-  }
-
-  .proj-links {
-    margin-top: 14px;
-    display: flex;
-    gap: 14px;
-  }
-
-  .proj-links a {
-    font-family: var(--mono);
-    font-size: 12.5px;
-    color: var(--chalk);
-    text-decoration: none;
-    border-bottom: 1px solid var(--slate-dim);
-    padding-bottom: 1px;
-  }
-
-  .proj-links a:hover { border-color: var(--signal); color: var(--signal); }
-
-  /* ---------- NOW ---------- */
-
-  .now-text {
-    color: var(--slate);
-    font-size: 15px;
-    max-width: 58ch;
-  }
-
-  .now-text strong { color: var(--chalk); }
-
-  /* ---------- DEPLOY STATUS FOOTER ---------- */
-
-  footer {
-    padding: 40px 0 80px;
-  }
-
-  .status-panel {
-    font-family: var(--mono);
-    font-size: 12.5px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    padding: 18px 20px;
-  }
-
-  .status-title {
-    color: var(--slate-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 10.5px;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .status-title::before {
-    content: "";
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #4ADE80;
-    box-shadow: 0 0 0 3px rgba(74,222,128,0.15);
-  }
-
-  .status-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 10px 20px;
-    color: var(--slate);
-  }
-
-  .status-grid div span {
-    color: var(--chalk);
-  }
-
-  .foot-note {
-    margin-top: 18px;
-    color: var(--slate-dim);
-    font-size: 12px;
-  }
-
-  /* ---------- EMPTY STATE ---------- */
-
-  .empty-hint {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--slate-dim);
-    border: 1px dashed var(--line);
-    border-radius: 4px;
-    padding: 14px 16px;
-  }
-
-  /* ---------- RESPONSIVE ---------- */
-
-  @media (max-width: 560px) {
-    .hero { padding: 64px 0 48px; }
-    .entry { grid-template-columns: 1fr; gap: 6px; }
-    .wrap { padding: 0 20px; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
-  }
+  .hero { padding: 128px 0 var(--sp-7); }
+  .highlight-card { grid-template-columns: 1fr; gap: var(--sp-1); }
+  .wrap { padding: 0 20px; }
+  section { padding: var(--sp-7) 0; }
+}
 </style>
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav class="nav" aria-label="Primary">
+  <div class="nav-inner">
+    <a class="nav-brand" href="#top" aria-label="Back to top">
+      <span class="dot" aria-hidden="true"></span>{{ profile.full_name|default:"Portfolio" }}
+    </a>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+    <div class="nav-links">
+      <a href="#about">About</a>
+      <a href="#stack">Stack</a>
+      <a href="#experience">Experience</a>
+      <a href="#projects">Projects</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
   <div class="wrap">
 
-    <!-- HERO (из Profile + ContactLink) -->
-    <div class="hero">
-      <div class="eyebrow">
-        {{ profile.role_title }}{% if profile.location %} · {{ profile.location }}{% endif %}{% if profile.availability %} · {{ profile.availability }}{% endif %}
+    <!-- HERO -->
+    <div class="hero" id="top">
+      <div class="hero-top fade-up">
+        {% if profile.photo %}
+          <img class="hero-photo" src="{{ profile.photo.url }}" alt="{{ profile.full_name }}">
+        {% else %}
+          <div class="hero-avatar-fallback" aria-hidden="true">{{ profile.full_name|slice:":1"|default:"?" }}</div>
+        {% endif %}
+        <div class="eyebrow">
+          {{ profile.role_title }}
+          {% if profile.location %}<span class="sep">·</span> {{ profile.location }}{% endif %}
+          {% if profile.availability %}<span class="sep">·</span> {{ profile.availability }}{% endif %}
+        </div>
       </div>
-      <h1>{{ profile.full_name }}<span>.</span></h1>
+
+      <h1 class="name fade-up" style="animation-delay:.05s">{{ profile.full_name }}<span class="cursor" aria-hidden="true">_</span></h1>
+
       {% if profile.thesis %}
-      <p class="thesis">{{ profile.thesis|safe }}</p>
+      <p class="thesis fade-up" style="animation-delay:.1s">{{ profile.thesis|safe }}</p>
       {% endif %}
-      <div class="contact-row">
+
+      <div class="btn-row fade-up" style="animation-delay:.15s">
         {% for link in contact_links %}
-        <a href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }}</a>
+        <a class="btn{% if link.is_primary %} btn-primary{% endif %}" href="{{ link.url }}" target="_blank" rel="noopener">
+          {{ link.icon|icon_svg }}{{ link.label }}
+        </a>
         {% endfor %}
         {% if profile.resume %}
-        <a href="{{ profile.resume.url }}" target="_blank" rel="noopener">resume.pdf</a>
+        <a class="btn" href="{{ profile.resume.url }}" target="_blank" rel="noopener">
+          {{ "resume"|icon_svg }}Resume
+        </a>
         {% endif %}
       </div>
     </div>
 
-    <!-- STACK (из Skill, сгруппировано по category) -->
+    <!-- ABOUT -->
+    {% if profile.currently_text %}
+    <section id="about">
+      <div class="sec-head reveal">
+        <span class="sec-num">01</span>
+        <span class="sec-title">About</span>
+      </div>
+      <p class="now-text reveal">{{ profile.currently_text|safe }}</p>
+    </section>
+    {% endif %}
+
+    <!-- STACK -->
     <section id="stack">
-      <div class="sec-head">
-        <span class="sec-num">§01</span>
+      <div class="sec-head reveal">
+        <span class="sec-num">02</span>
         <span class="sec-title">Stack</span>
       </div>
 
       {% for group in skill_groups %}
-      <div class="stack-group">
+      <div class="stack-group reveal">
         <div class="stack-label">{{ group.label }}</div>
-        <div class="chips">
+        <div class="skill-grid">
           {% for skill in group.skills %}
-          <span class="chip">{{ skill.name }}</span>
+          <div class="skill-card">
+            <div class="skill-name">{% if skill.icon %}{{ skill.icon }} {% endif %}{{ skill.name }}</div>
+            {% if skill.level %}
+            <div class="skill-level" role="img" aria-label="Proficiency {{ skill.level }} of 5">
+              {% for i in "12345" %}<i class="{% if forloop.counter <= skill.level %}filled{% endif %}"></i>{% endfor %}
+            </div>
+            {% endif %}
+          </div>
           {% endfor %}
         </div>
       </div>
       {% empty %}
-      <p class="empty-hint">Навыки ещё не добавлены — зайди в /admin/ и добавь Skill.</p>
+      <p class="empty-hint">No skills available.</p>
       {% endfor %}
     </section>
 
-    <!-- EXPERIENCE (из Experience) -->
+    <!-- EXPERIENCE -->
     <section id="experience">
-      <div class="sec-head">
-        <span class="sec-num">§02</span>
+      <div class="sec-head reveal">
+        <span class="sec-num">03</span>
         <span class="sec-title">Experience</span>
       </div>
 
-      {% for exp in experiences %}
-      <div class="entry">
-        <div class="entry-date">
-          {{ exp.date_start|date:"Y" }} — {% if exp.date_end %}{{ exp.date_end|date:"Y" }}{% else %}Now{% endif %}
-        </div>
-        <div>
+      {% if experiences %}
+      <div class="timeline">
+        {% for exp in experiences %}
+        <div class="entry reveal">
+          <div class="entry-date">{{ exp.date_start|date:"M Y" }} — {% if exp.date_end %}{{ exp.date_end|date:"M Y" }}{% else %}Present{% endif %}</div>
           <div class="entry-role">{{ exp.role }} <span class="entry-org">· {{ exp.place }}</span></div>
           <p class="entry-desc">{{ exp.description }}</p>
         </div>
+        {% endfor %}
       </div>
-      {% empty %}
-      <p class="empty-hint">Опыт ещё не добавлен — зайди в /admin/ и добавь Experience.</p>
-      {% endfor %}
+      {% else %}
+      <p class="empty-hint">No experience added.</p>
+      {% endif %}
     </section>
 
-    <!-- PROJECTS (из Project) -->
+    <!-- PROJECTS -->
     <section id="projects">
-      <div class="sec-head">
-        <span class="sec-num">§03</span>
+      <div class="sec-head reveal">
+        <span class="sec-num">04</span>
         <span class="sec-title">Projects</span>
       </div>
 
-      {% for project in projects %}
-      <div class="proj-card">
-        <div class="proj-top">
-          <span class="proj-name">{{ project.title }}</span>
-          <span class="proj-tag">{{ project.get_status_display }}</span>
+      {% if projects %}
+      <div class="project-grid">
+        {% for project in projects %}
+        <div class="proj-card reveal">
+          {% if project.thumbnail %}
+          <img class="proj-thumb" src="{{ project.thumbnail.url }}" alt="" loading="lazy">
+          {% endif %}
+          <div class="proj-body">
+            <div class="proj-top">
+              <div class="proj-heading">
+                {% if project.logo %}<img class="proj-logo" src="{{ project.logo.url }}" alt="" loading="lazy">{% endif %}
+                <span class="proj-name">{{ project.title }}</span>
+              </div>
+              <span class="proj-badge {{ project.status }}">{{ project.get_status_display }}</span>
+            </div>
+            <p class="proj-desc">{{ project.description }}</p>
+            {% if project.tech_list %}
+            <div class="proj-tech">
+              {% for tech in project.tech_list %}<span class="tech-chip">{{ tech }}</span>{% endfor %}
+            </div>
+            {% endif %}
+            {% if project.github_url or project.demo_url %}
+            <div class="proj-links">
+              {% if project.github_url %}<a href="{{ project.github_url }}" target="_blank" rel="noopener">{{ "github"|icon_svg }}Source</a>{% endif %}
+              {% if project.demo_url %}<a href="{{ project.demo_url }}" target="_blank" rel="noopener">{{ "external"|icon_svg }}Live demo</a>{% endif %}
+            </div>
+            {% endif %}
+          </div>
         </div>
-        <p class="proj-desc">{{ project.description }}</p>
-        <div class="proj-meta">{{ project.tech_stack }}</div>
-        {% if project.github_url or project.demo_url %}
-        <div class="proj-links">
-          {% if project.github_url %}<a href="{{ project.github_url }}" target="_blank" rel="noopener">Source →</a>{% endif %}
-          {% if project.demo_url %}<a href="{{ project.demo_url }}" target="_blank" rel="noopener">Live demo →</a>{% endif %}
-        </div>
-        {% endif %}
+        {% endfor %}
       </div>
-      {% empty %}
-      <p class="empty-hint">Проекты ещё не добавлены — зайди в /admin/ и добавь Project.</p>
-      {% endfor %}
+      {% else %}
+      <p class="empty-hint">No projects yet.</p>
+      {% endif %}
     </section>
 
-    <!-- NOW -->
-    <section id="now">
-      <div class="sec-head">
-        <span class="sec-num">§04</span>
-        <span class="sec-title">Currently</span>
+    <!-- HIGHLIGHTS: education / certifications / achievements -->
+    {% if highlights %}
+    <section id="highlights">
+      <div class="sec-head reveal">
+        <span class="sec-num">05</span>
+        <span class="sec-title">Highlights</span>
       </div>
-      <p class="now-text">{{ profile.currently_text|safe }}</p>
-    </section>
-
-    <!-- DEPLOY STATUS -->
-    <footer>
-      <div class="status-panel">
-        <div class="status-title">Deployment status</div>
-        <div class="status-grid">
-          <div>Host <br><span>forskie.top</span></div>
-          <div>Server <br><span>AWS EC2</span></div>
-          <div>Runtime <br><span>Django + Gunicorn</span></div>
-          <div>Database <br><span>PostgreSQL</span></div>
-          <div>Proxy <br><span>Nginx</span></div>
-          <div>Shipped via <br><span>Docker Compose</span></div>
+      <div class="highlight-grid">
+        {% for h in highlights %}
+        <div class="highlight-card reveal">
+          <div class="highlight-date">
+            {% if h.date_start %}{{ h.date_start|date:"Y" }}{% if h.date_end %} — {{ h.date_end|date:"Y" }}{% elif h.date_start %} — Present{% endif %}{% endif %}
+          </div>
+          <div>
+            <span class="highlight-type">{{ h.get_type_display }}</span>
+            <div class="highlight-title">{{ h.title }}</div>
+            {% if h.subtitle %}<div class="highlight-subtitle">{{ h.subtitle }}</div>{% endif %}
+            {% if h.description %}<p class="highlight-desc">{{ h.description }}</p>{% endif %}
+            {% if h.url %}<a class="highlight-link" href="{{ h.url }}" target="_blank" rel="noopener">{{ "external"|icon_svg }}View credential</a>{% endif %}
+          </div>
         </div>
+        {% endfor %}
       </div>
-      <p class="foot-note">© 2026 Bilal — built from scratch, deployed by hand.</p>
-    </footer>
+    </section>
+    {% endif %}
+
+    <!-- CONTACT -->
+    <section id="contact" class="contact-section">
+      <div class="sec-head reveal">
+        <span class="sec-num">06</span>
+        <span class="sec-title">Contact</span>
+      </div>
+      <p class="contact-lead reveal">Have a role, a project, or just want to talk shop? Reach out through any of these.</p>
+      <div class="btn-row reveal">
+        {% for link in contact_links %}
+        <a class="btn{% if link.is_primary %} btn-primary{% endif %}" href="{{ link.url }}" target="_blank" rel="noopener">
+          {{ link.icon|icon_svg }}{{ link.label }}
+        </a>
+        {% empty %}
+        <p class="empty-hint">No contact links added.</p>
+        {% endfor %}
+      </div>
+    </section>
 
   </div>
+</main>
 
+<footer>
+  <div class="wrap">
+    {% if site_settings.show_deployment_panel and site_settings.deployment_fields %}
+    <div class="status-panel">
+      <div class="status-title">Deployment status</div>
+      <div class="status-grid">
+        {% for label, value in site_settings.deployment_fields %}
+        <div>{{ label }}<span>{{ value }}</span></div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    <p class="foot-note">
+      {% if site_settings.footer_text %}{{ site_settings.footer_text }}{% else %}© {% now "Y" %} {{ profile.full_name }}{% endif %}
+    </p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- Mobile nav toggle ---------- */
+  var toggle = document.querySelector(".nav-toggle");
+  var navLinks = document.querySelector(".nav-links");
+  if (toggle && navLinks) {
+    toggle.addEventListener("click", function () {
+      var isOpen = navLinks.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+    navLinks.querySelectorAll("a").forEach(function (link) {
+      link.addEventListener("click", function () {
+        navLinks.classList.remove("open");
+        toggle.setAttribute("aria-expanded", "false");
+      });
+    });
+  }
+
+  /* ---------- Scrollspy: highlight nav link for section in view ---------- */
+  var sections = document.querySelectorAll("main section[id]");
+  var navAnchors = document.querySelectorAll(".nav-links a[href^='#']");
+
+  if (sections.length && navAnchors.length && "IntersectionObserver" in window) {
+    var spy = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          var id = entry.target.getAttribute("id");
+          var link = document.querySelector(".nav-links a[href='#" + id + "']");
+          if (!link) return;
+          if (entry.isIntersecting) {
+            navAnchors.forEach(function (a) {
+              a.classList.remove("active");
+              a.removeAttribute("aria-current");
+            });
+            link.classList.add("active");
+            link.setAttribute("aria-current", "true");
+          }
+        });
+      },
+      { rootMargin: "-45% 0px -50% 0px", threshold: 0 }
+    );
+    sections.forEach(function (s) { spy.observe(s); });
+  }
+
+  /* ---------- Scroll reveal for .reveal elements ---------- */
+  var revealEls = document.querySelectorAll(".reveal");
+  if (revealEls.length) {
+    if (prefersReducedMotion || !("IntersectionObserver" in window)) {
+      revealEls.forEach(function (el) { el.classList.add("in-view"); });
+    } else {
+      var revealer = new IntersectionObserver(
+        function (entries, obs) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("in-view");
+              obs.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.15, rootMargin: "0px 0px -60px 0px" }
+      );
+      revealEls.forEach(function (el, i) {
+        el.style.transitionDelay = Math.min(i * 60, 240) + "ms";
+        revealer.observe(el);
+      });
+    }
+  }
+})();
+</script>
 </body>
 </html>
